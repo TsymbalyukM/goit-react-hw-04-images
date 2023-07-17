@@ -1,4 +1,4 @@
-import { React, Component } from 'react';
+import { useState, useEffect } from 'react';
 import { fetchPictures } from './API/Api';
 import { Searchbar } from './Searchbar/Searchbar';
 import { ImageGallery } from './ImageGallery/ImageGallery';
@@ -8,79 +8,103 @@ import { Button } from './Button/Button';
 import { Wrapper } from './Searchbar/Searchbar.styled';
 import GlobalStyle from './styles';
 
-export class App extends Component {
-  state = {
-    pictures: [],
-    showModal: false,
-    largeImageUrl: '',
-    page: 1,
-    query: '',
-    error: null,
-    isLoading: false,
-  };
+const App = () => {
+  const [pictures, setPictures] = useState([]);
+  const [showModal, setShowModal] = useState(false);
+  const [largeImageUrl, setLargeImageUrl] = useState('');
+  const [page, setPage] = useState(1);
+  const [query, setQuery] = useState('');
+  const [error, setError] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
 
-  componentDidUpdate(_, prevState) {
-    const { page, query } = this.state;
-    if (prevState.page !== page || prevState.query !== query) {
-      this.addPictures(query, page);
+  // componentDidUpdate(_, prevState) {
+  //   const { page, query } = this.state;
+  //   if (prevState.page !== page || prevState.query !== query) {
+  //     this.addPictures(query, page);
+  //   }
+  // }
+
+  useEffect(() => {
+    if (query === '') {
+      return;
     }
-  }
+    const addPictures = async (page, query) => {
+      try {
+        setIsLoading(true);
 
-  searchResult = value => {
-    this.setState({ query: value, page: 1, pictures: [] });
+        const { hits } = await fetchPictures(query, page);
+
+        setPictures(prevPictures => [...prevPictures, ...hits]);
+      } catch (error) {
+        setError(error.message);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    addPictures(page, query);
+  }, [page, query]);
+
+  const searchResult = value => {
+    setQuery(value);
+    setPage(1);
+    setPictures([]);
   };
 
-  handleLoadMore = () => {
-    this.setState(prevState => ({
-      page: prevState.page + 1,
-    }));
+  const handleLoadMore = () => {
+    setPage(prevState => prevState + 1);
   };
 
-  addPictures = async (query, page) => {
-    try {
-      this.setState({ isLoading: true });
-
-      const { hits } = await fetchPictures(query, page);
-
-      this.setState(prevState => ({
-        pictures: [...prevState.pictures, ...hits],
-      }));
-    } catch (error) {
-      this.setState({ error: error.message });
-    } finally {
-      this.setState({ isLoading: false });
-    }
-  };
-  getLargeImgUrl = imgUrl => {
-    this.setState({ largeImageUrl: imgUrl });
-    this.toggleModal();
+  const getLargeImgUrl = imgUrl => {
+    setLargeImageUrl(imgUrl);
+    toggleModal();
   };
 
-  toggleModal = () => {
-    this.setState(prevState => ({
-      showModal: !prevState.showModal,
-    }));
+  const toggleModal = () => {
+    setShowModal(prevState => !prevState);
   };
 
-  render() {
-    const { pictures, error, isLoading, showModal, largeImageUrl } = this.state;
-    const loadMoreButton = pictures.length > 0 && !isLoading;
-    return (
-      <Wrapper>
-        <GlobalStyle />
-        <Searchbar onSubmit={this.searchResult} />
-        {showModal && (
-          <Modal imgUrl={largeImageUrl} onClose={this.toggleModal} />
-        )}
-        <ImageGallery
-          error={error}
-          isLoading={isLoading}
-          pictures={pictures}
-          onClick={this.getLargeImgUrl}
-        />
-        {loadMoreButton && <Button onClick={this.handleLoadMore} />}
-        {isLoading && <Loader />}
-      </Wrapper>
-    );
-  }
-}
+  return (
+    <Markup
+      searchResult={searchResult}
+      error={error}
+      isLoading={isLoading}
+      pictures={pictures}
+      handleLoadMore={handleLoadMore}
+      getLargeImgUrl={getLargeImgUrl}
+      showModal={showModal}
+      largeImageUrl={largeImageUrl}
+      toggleModal={toggleModal}
+    />
+  );
+};
+
+const Markup = ({
+  pictures,
+  error,
+  isLoading,
+  showModal,
+  largeImageUrl,
+  searchResult,
+  toggleModal,
+  handleLoadMore,
+  getLargeImgUrl,
+}) => {
+  const loadMoreButton = pictures.length > 0 && !isLoading;
+  return (
+    <Wrapper>
+      <GlobalStyle />
+      <Searchbar onSubmit={searchResult} />
+      {showModal && <Modal imgUrl={largeImageUrl} onClose={toggleModal} />}
+      <ImageGallery
+        error={error}
+        isLoading={isLoading}
+        pictures={pictures}
+        onClick={getLargeImgUrl}
+      />
+      {loadMoreButton && <Button onClick={handleLoadMore} />}
+      {isLoading && <Loader />}
+    </Wrapper>
+  );
+};
+
+export default App;

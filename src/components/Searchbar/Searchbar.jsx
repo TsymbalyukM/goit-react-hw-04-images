@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import React, { Component } from 'react';
+import  { useState } from 'react';
 import {
   SearchbarContainer,
   SearchForm,
@@ -8,48 +8,37 @@ import {
   SearchFormInput,
 } from './Searchbar.styled';
 
-export class Searchbar extends Component {
-  state = {
-    search: '',
+export const Searchbar = ({ onSubmit }) => {
+  const [search, setSearch] = useState('');
+
+  const searchResult = event => {
+    setSearch(event.currentTarget.value);
   };
 
-  searchResult = event => {
-    this.setState({
-      search: event.currentTarget.value,
-    });
-  };
-
-  handleSubmit = event => {
+  const handleSubmit = event => {
     event.preventDefault();
-    const { search } = this.state;
-
-    this.props.onSubmit(search);
-    this.setState({
-      search: '',
-    });
+    onSubmit(search);
+    setSearch('');
   };
 
-  render() {
-    const { search } = this.state;
-    return (
-      <SearchbarContainer>
-        <SearchForm onSubmit={this.handleSubmit}>
-          <SearchFormBtn type="submit">
-            <SearchFormBtnLabel>Search</SearchFormBtnLabel>
-          </SearchFormBtn>
+  return (
+    <SearchbarContainer>
+      <SearchForm onSubmit={handleSubmit}>
+        <SearchFormBtn type="submit">
+          <SearchFormBtnLabel>Search</SearchFormBtnLabel>
+        </SearchFormBtn>
 
-          <SearchFormInput
-            type="text"
-            autoComplete="off"
-            autoFocus
-            value={search}
-            onChange={this.searchResult}
-          />
-        </SearchForm>
-      </SearchbarContainer>
-    );
-  }
-}
+        <SearchFormInput
+          type="text"
+          autoComplete="off"
+          autoFocus
+          value={search}
+          onChange={searchResult}
+        />
+      </SearchForm>
+    </SearchbarContainer>
+  );
+};
 
 Searchbar.propTypes = {
   onSubmit: PropTypes.func.isRequired,
