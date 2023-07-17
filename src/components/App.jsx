@@ -17,13 +17,6 @@ const App = () => {
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  // componentDidUpdate(_, prevState) {
-  //   const { page, query } = this.state;
-  //   if (prevState.page !== page || prevState.query !== query) {
-  //     this.addPictures(query, page);
-  //   }
-  // }
-
   useEffect(() => {
     if (query === '') {
       return;
@@ -96,8 +89,6 @@ const Markup = ({
       <Searchbar onSubmit={searchResult} />
       {showModal && <Modal imgUrl={largeImageUrl} onClose={toggleModal} />}
       <ImageGallery
-        error={error}
-        isLoading={isLoading}
         pictures={pictures}
         onClick={getLargeImgUrl}
       />

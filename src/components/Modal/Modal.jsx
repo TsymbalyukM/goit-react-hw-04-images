@@ -3,27 +3,19 @@ import { React, useEffect } from 'react';
 import { Overlay, ModalWindow } from './Modal.styled';
 
 export const Modal = ({ onClose, imgUrl }) => {
-  // componentDidMount() {
-  //   window.addEventListener('keydown', this.handleKeydown);
-  // }
-
-  // componentWillUnmount() {
-  //   window.removeEventListener('keydown', this.handleKeydown);
-  
-
-  const handleKeydown = event => {
-    if (event.code === 'Escape') {
-      onClose();
-    }
-  };
-
   useEffect(() => {
+    const handleKeydown = event => {
+      if (event.code === 'Escape') {
+        onClose();
+      }
+    };
+
     window.addEventListener('keydown', handleKeydown);
 
     return () => {
       window.removeEventListener('keydown', handleKeydown);
     };
-  });
+  }, [onClose]);
 
   const handleBackdropClick = event => {
     if (event.currentTarget === event.target) {
@@ -31,16 +23,14 @@ export const Modal = ({ onClose, imgUrl }) => {
     }
   };
 
-
-    return (
-      <Overlay onClick={handleBackdropClick}>
-        <ModalWindow>
-          <img src={imgUrl} alt="" />
-        </ModalWindow>
-      </Overlay>
-    );
-  }
-
+  return (
+    <Overlay onClick={handleBackdropClick}>
+      <ModalWindow>
+        <img src={imgUrl} alt="" />
+      </ModalWindow>
+    </Overlay>
+  );
+};
 
 Modal.proptTypes = {
   onClose: PropTypes.func.isRequired,
